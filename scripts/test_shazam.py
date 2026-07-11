@@ -13,12 +13,17 @@ from recognition.shazam import ShazamRecognizer
 
 
 async def main():
+
     recognizer = ShazamRecognizer()
 
-    result = await recognizer.recognize("recordings/sample.wav")
+    track = await recognizer.recognize("test.wav")
 
-    print(json.dumps(result, indent=4, ensure_ascii=False))
-
+    print(f"Title : {track.title}")
+    print(f"Artist: {track.artist}")
+    print(f"Album : {track.album}")
+    print(f"Genre : {track.genre}")
+    print(f"ISRC  : {track.isrc}")
+    print(f"Cover : {track.cover_url}")
 
 if __name__ == "__main__":
     asyncio.run(main())

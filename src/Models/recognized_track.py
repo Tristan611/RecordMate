@@ -1,8 +1,12 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class RecognizedTrack:
-    title
-    artist
-    album
-    cover_url
-    isrc
-    release_date
-    genre
+    title: str
+    artist: str
+    album: str
+    cover_url: str
+    isrc: str
+    genre: str
+    confidence: float | None = None
