@@ -12,7 +12,7 @@ class RecordMate:
         self.recognition_manager = RecognitionManager()
         self.state = StateManager()
         self.audio_manager = AudioManager()
-
+        self.last_isrc = None
         self.spotify_manager = SpotifyManager()
         self.spotify_manager.start()
 
@@ -50,6 +50,14 @@ class RecordMate:
             print("FOUT: Geen nummer herkend.")
             return
 
+        print(f"Current ISRC : {recognized_track.isrc}")
+        print(f"Previous ISRC: {self.last_isrc}")
+
+        if recognized_track.isrc == self.last_isrc:
+            print("Nummer is al actief. Spotify wordt niet opnieuw gestart.")
+            self.state.set(State.IDLE)
+            return
+        
         print("OK: Nummer herkend")
         print(f"    Artiest : {recognized_track.artist}")
         print(f"    Nummer  : {recognized_track.title}")
@@ -67,7 +75,12 @@ class RecordMate:
             self.state.set(State.ERROR)
             print("Spotify playback mislukt.")
             return
+        
+        self.last_isrc = recognized_track.isrc
         self.state.set(State.PLAYING)
+        self.last_isrc = recognized_track.isrc
+
+        print(f"Nieuwe last_isrc: {self.last_isrc}")
         print("OK: Playback gestart")
 
         #
