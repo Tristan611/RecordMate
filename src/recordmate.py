@@ -6,6 +6,7 @@ from spotify.player import SpotifyPlayer
 from spotify.search import SpotifySearch
 from core.state import State
 from core.state_manager import StateManager
+from audio.manager import AudioManager
 
 class RecordMate:
 
@@ -17,6 +18,7 @@ class RecordMate:
         self.spotify_client = SpotifyAuth().authenticate()
         self.spotify_search = SpotifySearch(self.spotify_client)
         self.spotify_player = SpotifyPlayer(self.spotify_client)
+        self.audio_manager = AudioManager()
 
     def print_header(self):
         print("=" * 45)
@@ -31,11 +33,9 @@ class RecordMate:
         # LISTENING
         #
         self.state.set(State.LISTENING)
-
-        audio_file = self.project_root / "recordings" / "sample.wav"
-
+        audio_file = self.audio_manager.record_sample()
         print("\n[1/4] Audio opnemen...")
-        print("      Testmodus: bestaande opname wordt gebruikt.")
+        print("      Live-opname wordt gestart...")
 
         if not audio_file.exists():
             self.state.set(State.ERROR)

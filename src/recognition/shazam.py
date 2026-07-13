@@ -13,7 +13,9 @@ class ShazamRecognizer:
         result = await self.shazam.recognize(file_path)
 
         track = result["track"]
-
+        if track is None:
+            return None
+        
         album = ""
 
         for section in track.get("sections", []):
