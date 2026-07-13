@@ -4,7 +4,8 @@ from recognition.shazam import ShazamRecognizer
 from spotify.auth import SpotifyAuth
 from spotify.player import SpotifyPlayer
 from spotify.search import SpotifySearch
-
+from core.state import State
+from core.state_manager import StateManager
 
 class RecordMate:
 
@@ -12,7 +13,7 @@ class RecordMate:
         self.project_root = Path(__file__).resolve().parent.parent
 
         self.recognizer = ShazamRecognizer()
-
+        self.state = StateManager()
         self.spotify_client = SpotifyAuth().authenticate()
         self.spotify_search = SpotifySearch(self.spotify_client)
         self.spotify_player = SpotifyPlayer(self.spotify_client)
@@ -26,28 +27,45 @@ class RecordMate:
 
         self.print_header()
 
+        #
+        # LISTENING
+        #
+        self.state.set(State.LISTENING)
+
         audio_file = self.project_root / "recordings" / "sample.wav"
 
         print("\n[1/4] Audio opnemen...")
         print("      Testmodus: bestaande opname wordt gebruikt.")
 
         if not audio_file.exists():
+            self.state.set(State.ERROR)
             print(f"FOUT: Audiobestand niet gevonden: {audio_file}")
             return
 
         print(f"OK: Audio opgenomen: {audio_file}")
+
+        #
+        # RECOGNIZING
+        #
+        self.state.set(State.RECOGNIZING)
 
         print("\n[2/4] Nummer herkennen...")
 
         recognized_track = await self.recognizer.recognize(str(audio_file))
 
         if recognized_track is None:
+            self.state.set(State.ERROR)
             print("FOUT: Geen nummer herkend.")
             return
 
         print("OK: Nummer herkend")
         print(f"    Artiest : {recognized_track.artist}")
         print(f"    Nummer  : {recognized_track.title}")
+
+        #
+        # SEARCHING
+        #
+        self.state.set(State.SEARCHING)
 
         print("\n[3/4] Spotify zoeken...")
 
@@ -57,16 +75,23 @@ class RecordMate:
         )
 
         if spotify_track is None:
+            self.state.set(State.ERROR)
             print("FOUT: Geen Spotify-track gevonden.")
             return
 
         print("OK: Spotify-track gevonden")
+
+        #
+        # PLAYING
+        #
+        self.state.set(State.PLAYING)
 
         print("\n[4/4] Playback starten...")
 
         devices = self.spotify_player.get_devices()
 
         if not devices:
+            self.state.set(State.ERROR)
             print("Geen apparaten gevonden.")
             return
 
@@ -81,3 +106,8 @@ class RecordMate:
         )
 
         print("OK: Playback gestart")
+
+        #
+        # Terug naar IDLE
+        #
+        self.state.set(State.IDLE)

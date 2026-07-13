@@ -1,16 +1,10 @@
 from enum import Enum
 
 
-class AppState(Enum):
-
-    STARTING = "Starting"
-
+class State(Enum):
     IDLE = "Idle"
-
     LISTENING = "Listening"
-
     RECOGNIZING = "Recognizing"
-
+    SEARCHING = "Searching Spotify"
     PLAYING = "Playing"
-
     ERROR = "Error"
