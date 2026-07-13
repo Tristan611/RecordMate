@@ -1,7 +1,11 @@
+from recognition.shazam import ShazamRecognizer
+
+
 class RecognitionManager:
 
-    def __init__(self, logger):
-        self.logger = logger
+    def __init__(self):
+        self.recognizer = ShazamRecognizer()
 
-    def start(self):
-        self.logger.info("Recognition Manager started.")
+    async def recognize(self, audio_file):
+
+        return await self.recognizer.recognize(str(audio_file))

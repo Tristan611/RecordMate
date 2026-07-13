@@ -1,6 +1,5 @@
 from pathlib import Path
-
-from recognition.shazam import ShazamRecognizer
+from recognition.manager import RecognitionManager
 from spotify.auth import SpotifyAuth
 from spotify.player import SpotifyPlayer
 from spotify.search import SpotifySearch
@@ -12,8 +11,7 @@ class RecordMate:
 
     def __init__(self):
         self.project_root = Path(__file__).resolve().parent.parent
-
-        self.recognizer = ShazamRecognizer()
+        self.recognition_manager = RecognitionManager()
         self.state = StateManager()
         self.spotify_client = SpotifyAuth().authenticate()
         self.spotify_search = SpotifySearch(self.spotify_client)
@@ -51,8 +49,7 @@ class RecordMate:
 
         print("\n[2/4] Nummer herkennen...")
 
-        recognized_track = await self.recognizer.recognize(str(audio_file))
-
+        recognized_track = await self.recognition_manager.recognize(audio_file)
         if recognized_track is None:
             self.state.set(State.ERROR)
             print("FOUT: Geen nummer herkend.")
@@ -76,7 +73,7 @@ class RecordMate:
 
         if spotify_track is None:
             self.state.set(State.ERROR)
-            print("FOUT: Geen Spotify-track gevonden.")
+            print("Geen Spotify-track gevonden.")
             return
 
         print("OK: Spotify-track gevonden")

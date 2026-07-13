@@ -1,3 +1,5 @@
+from unittest import result
+
 from shazamio import Shazam
 
 from Models.recognized_track import RecognizedTrack
@@ -12,7 +14,8 @@ class ShazamRecognizer:
 
         result = await self.shazam.recognize(file_path)
 
-        track = result["track"]
+        track = result.get("track")
+
         if track is None:
             return None
         
