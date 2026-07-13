@@ -1,3 +1,5 @@
+import asyncio
+
 from recognition.manager import RecognitionManager
 from spotify.manager import SpotifyManager
 from core.state import State
@@ -19,10 +21,7 @@ class RecordMate:
         print("                 RecordMate")
         print("=" * 45)
 
-    async def run(self):
-
-        self.print_header()
-
+    async def run_pipeline(self):
         #
         # LISTENING
         #
@@ -47,7 +46,7 @@ class RecordMate:
 
         recognized_track = await self.recognition_manager.recognize(audio_file)
         if recognized_track is None:
-            self.state.set(State.ERROR)
+            self.state.set(State.IDLE)
             print("FOUT: Geen nummer herkend.")
             return
 
@@ -75,3 +74,14 @@ class RecordMate:
         # Terug naar IDLE
         #
         self.state.set(State.IDLE)
+    
+    async def run(self):
+        self.print_header()
+
+        try:
+            while True:
+                await self.run_pipeline()
+                await asyncio.sleep(10)
+
+        except asyncio.CancelledError:
+            pass
