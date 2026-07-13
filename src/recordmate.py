@@ -1,8 +1,5 @@
-from pathlib import Path
 from recognition.manager import RecognitionManager
-from spotify.auth import SpotifyAuth
-from spotify.player import SpotifyPlayer
-from spotify.search import SpotifySearch
+from spotify.manager import SpotifyManager
 from core.state import State
 from core.state_manager import StateManager
 from audio.manager import AudioManager
@@ -10,13 +7,12 @@ from audio.manager import AudioManager
 class RecordMate:
 
     def __init__(self):
-        self.project_root = Path(__file__).resolve().parent.parent
         self.recognition_manager = RecognitionManager()
         self.state = StateManager()
-        self.spotify_client = SpotifyAuth().authenticate()
-        self.spotify_search = SpotifySearch(self.spotify_client)
-        self.spotify_player = SpotifyPlayer(self.spotify_client)
         self.audio_manager = AudioManager()
+
+        self.spotify_manager = SpotifyManager()
+        self.spotify_manager.start()
 
     def print_header(self):
         print("=" * 45)
@@ -66,42 +62,13 @@ class RecordMate:
 
         print("\n[3/4] Spotify zoeken...")
 
-        spotify_track = self.spotify_search.search_track(
-            recognized_track.artist,
-            recognized_track.title,
-        )
+        success = self.spotify_manager.play(recognized_track)
 
-        if spotify_track is None:
+        if not success:
             self.state.set(State.ERROR)
-            print("Geen Spotify-track gevonden.")
+            print("Spotify playback mislukt.")
             return
-
-        print("OK: Spotify-track gevonden")
-
-        #
-        # PLAYING
-        #
         self.state.set(State.PLAYING)
-
-        print("\n[4/4] Playback starten...")
-
-        devices = self.spotify_player.get_devices()
-
-        if not devices:
-            self.state.set(State.ERROR)
-            print("Geen apparaten gevonden.")
-            return
-
-        selected_device = next(
-            (d for d in devices if d.get("is_active")),
-            devices[0],
-        )
-
-        self.spotify_player.play_track(
-            spotify_track.uri,
-            device_id=selected_device["id"],
-        )
-
         print("OK: Playback gestart")
 
         #
