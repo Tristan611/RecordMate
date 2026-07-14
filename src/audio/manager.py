@@ -21,3 +21,21 @@ class AudioManager:
             self.logger.info(f"Audio saved to {path}")
 
         return path
+    
+    def measure_level(self, duration: int = 1) -> float:
+        level = self.recorder.measure_level(duration=duration)
+
+        if self.logger:
+            self.logger.info(f"Gemeten audioniveau: {level:.2f}")
+
+        return level
+    def has_audio_signal(
+        self,
+        threshold: float = 100.0,
+        duration: int = 1,
+    ) -> bool:
+        level = self.measure_level(duration=duration)
+
+        print(f"Gemeten audioniveau: {level:.2f}")
+
+        return level >= threshold

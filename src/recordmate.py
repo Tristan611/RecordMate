@@ -8,6 +8,9 @@ from spotify.manager import SpotifyManager
 
 
 class RecordMate:
+    SCAN_INTERVAL_SECONDS = 5
+    AUDIO_THRESHOLD = 300.0
+    LEVEL_CHECK_DURATION = 1
 
     def __init__(self):
         self.recognition_manager = RecognitionManager()
@@ -24,6 +27,20 @@ class RecordMate:
         print("=" * 45)
 
     async def run_pipeline(self):
+        #
+        # IDLE / AUDIO DETECTION
+        #
+        self.state.set(State.IDLE)
+
+        print("\nControleren op audiosignaal...")
+
+        if not self.audio_manager.has_audio_signal(
+            threshold=self.AUDIO_THRESHOLD,
+            duration=self.LEVEL_CHECK_DURATION,
+        ):
+            print("Geen muziek gedetecteerd.")
+            return
+
         #
         # LISTENING
         #
@@ -118,7 +135,7 @@ class RecordMate:
         try:
             while True:
                 await self.run_pipeline()
-                await asyncio.sleep(10)
+                await asyncio.sleep(self.SCAN_INTERVAL_SECONDS)
 
         except asyncio.CancelledError:
             pass
