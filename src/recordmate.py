@@ -114,9 +114,10 @@ class RecordMate:
 
         print("\nControleren op audiosignaal...")
 
-        has_audio = self.audio_manager.has_audio_signal(
-            threshold=self.AUDIO_THRESHOLD,
-            duration=self.LEVEL_CHECK_DURATION,
+        has_audio = await asyncio.to_thread(
+            self.audio_manager.has_audio_signal,
+            self.AUDIO_THRESHOLD,
+            self.LEVEL_CHECK_DURATION,
         )
 
         if not has_audio:
@@ -131,7 +132,9 @@ class RecordMate:
         print("\n[1/4] Audio opnemen...")
         print("      Live-opname wordt gestart...")
 
-        audio_file = self.audio_manager.record_sample()
+        audio_file = await asyncio.to_thread(
+            self.audio_manager.record_sample
+        )
 
         if not audio_file.exists():
             self.state.set(State.ERROR)
@@ -191,8 +194,11 @@ class RecordMate:
 
         print("\n[3/4] Spotify zoeken en playback starten...")
 
-        success = self.spotify_manager.play(recognized_track)
-
+        success = await asyncio.to_thread(
+            self.spotify_manager.play,
+            recognized_track,
+        )
+        
         if not success:
             self.state.set(State.ERROR)
             print("Spotify playback mislukt.")
