@@ -46,22 +46,25 @@ class RecordMate:
 
     def on_state_changed(self, state: State) -> None:
         print(f"[EVENT] State gewijzigd: {state.value}")
-        match state:
 
+        match state:
             case State.IDLE:
-                self.display.show_idle()
+                if self.current_track is None:
+                    self.display.show_idle()
 
             case State.LISTENING:
-                self.display.show_listening()
+                if self.current_track is None:
+                    self.display.show_listening()
 
             case State.RECOGNIZING:
-                self.display.show_recognizing()
+                if self.current_track is None:
+                    self.display.show_recognizing()
 
             case State.SEARCHING:
-                self.display.show_searching()
+                if self.current_track is None:
+                    self.display.show_searching()
 
             case State.PLAYING:
-                # TRACK_CHANGED vult straks de titel/artiest.
                 pass
 
             case State.ERROR:
@@ -101,7 +104,6 @@ class RecordMate:
 
     def on_track_cleared(self) -> None:
         self.display.clear_track()
-
         print("[EVENT] Geen actieve track meer.")
 
     async def run_pipeline(self):
