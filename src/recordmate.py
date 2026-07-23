@@ -7,6 +7,7 @@ from recognition.manager import RecognitionManager
 from spotify.manager import SpotifyManager
 from core.event_manager import EventManager
 from core.events import Events
+from weather.manager import WeatherManager
 
 class RecordMate:
     SCAN_INTERVAL_SECONDS = 5
@@ -18,7 +19,7 @@ class RecordMate:
 
         self.events = EventManager()
         self.state = StateManager(self.events)
-
+        self.weather_manager = WeatherManager()
         self.recognition_manager = RecognitionManager()
         self.audio_manager = AudioManager()
         self.spotify_manager = SpotifyManager()
@@ -32,6 +33,11 @@ class RecordMate:
         self.events.subscribe(
             Events.TRACK_CHANGED,
             self.on_track_changed,
+        )
+
+        self.events.subscribe(
+            Events.WEATHER_CHANGED,
+            self.on_weather_changed,
         )
 
         self.events.subscribe(
@@ -101,6 +107,11 @@ class RecordMate:
             f"[EVENT] Nieuwe track: "
             f"{track.artist} - {track.title}"
         )
+    def on_weather_changed(self, weather):
+        self.display.set_weather(
+            f"{round(weather.temperature)}°C",
+            weather.description,
+        )
 
     def on_track_cleared(self) -> None:
         self.display.clear_track()
@@ -110,6 +121,16 @@ class RecordMate:
         #
         # IDLE / AUDIO DETECTION
         #
+        weather = await asyncio.to_thread(
+            self.weather_manager.get_weather
+        )
+
+        if weather:
+            self.events.emit(
+                Events.WEATHER_CHANGED,
+                weather,
+            )
+
         self.state.set(State.IDLE)
 
         print("\nControleren op audiosignaal...")
